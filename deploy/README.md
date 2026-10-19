@@ -336,15 +336,35 @@ cd ~/visionserve && docker compose pull && docker compose up -d && docker image 
 
 This downloads the new image, recreates the container from it, and deletes the old image.
 
-Or add an alias to `~/.bashrc` and run `update_visionserve`:
+### Without compose: `update_visionserve`
+
+For a container started with a plain `docker run`, [`visionserve-update.sh`](visionserve-update.sh)
+defines two shell functions. Install them once:
 
 ```bash
-alias update_visionserve='docker compose -f ~/visionserve/compose.yaml pull && { docker rm -f visionserve >/dev/null 2>&1; docker compose -f ~/visionserve/compose.yaml up -d; } && docker image prune -f'
+curl -fsSL https://raw.githubusercontent.com/mtbui2010/visionserve/main/deploy/visionserve-update.sh \
+  -o ~/.visionserve-update.sh
+echo 'source ~/.visionserve-update.sh' >> ~/.bashrc && source ~/.bashrc     # or ~/.zshrc
 ```
 
-The `docker rm -f visionserve` step removes a container named `visionserve` that was started
-earlier with a plain `docker run`. Without it, `docker compose up` fails with a
-container-name conflict.
+Then:
+
+```bash
+update_visionserve                     # container "visionserve", same image tag
+update_visionserve myvs                # another container name
+update_visionserve visionserve mtbui2010/visionserve:latest   # move off a pinned :vX.Y.Z tag
+
+update_visionserve_pypi                # pip install -U visionserve in the active env
+update_visionserve_pypi images         # with extras: visionserve[images]
+```
+
+- `update_visionserve` pulls the image and recreates the container with the same ports,
+  mounts (bind mounts and volumes, so pulled models stay), `--gpus all`, restart policy, the
+  `VISIONSERVE_*` variables you set and a custom command. It does nothing when the container
+  already runs the newest image, and it keeps the old image until you `docker rmi` it.
+- Pulling a pinned tag (`:v0.1.18-cpu`) again brings nothing new; pass the tag to move to.
+- `update_visionserve_pypi` refuses an editable install (`pip install -e`); `git pull` that
+  checkout instead.
 
 ---
 

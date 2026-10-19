@@ -385,7 +385,9 @@ CMD ["serve", "--addr", ":11435"]
 Weights are never baked into an image. Pull them into the running container
 (`docker exec -it visionserve visionserve pull rf-detr`) or bind-mount a host folder onto
 `/root/.models`. `deploy/vspull.sh` helps when there is no bind mount: it copies a host folder
-into the container and installs it, or falls back to the catalog.
+into the container and installs it, or falls back to the catalog. `deploy/visionserve-update.sh` defines
+`update_visionserve` (pull the new image, recreate the container with the same ports, mounts,
+GPU and env) and `update_visionserve_pypi` (upgrade the Python client).
 
 ```bash
 docker run -d --gpus all -p 11435:11435 \
@@ -406,7 +408,7 @@ docker run -d --gpus all -p 11435:11435 \
     | `clients/python/visionserve/convert/` | The converter: families (`rfdetr`, `hf`, `torch_generic`, `tf`), license gate, tiers A/B/C, report |
     | `convert/requirements*.txt`, `convert/vsconvert-entrypoint.sh` | Pinned converter dependencies; venv routing |
     | `deploy/Dockerfile`, `Dockerfile.edge`, `Dockerfile.convert` | Server images (CPU/GPU, arm64) and converter image |
-    | `deploy/docker-compose.yml`, `deploy/vspull.sh` | Local compose setup; copy-a-folder-into-the-container helper |
+    | `deploy/docker-compose.yml`, `deploy/vspull.sh`, `deploy/visionserve-update.sh` | Local compose setup; copy-a-folder-into-the-container helper; update helpers |
     | `internal/registry/sync_test.go`, `clients/python/tests/test_go_python_sync.py` | Keep the Go and Python license allowlists and name rules identical |
 
 ## Things to know
